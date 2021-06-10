@@ -60,9 +60,7 @@ const DEDCRIPTION_PHOTO = 'Это мой первый пост в кекстаг
 
 const photos = [];
 
-const getRandomInt = (elements) => {
- return elements[_.random(0, elements.length - 1)],
-};
+const getRandomInt = (elements) => elements[_.random(0, elements.length - 1)];
 
 const addComments = () => {
   const comments = [];
