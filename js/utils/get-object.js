@@ -71,7 +71,8 @@ const addPhotos = () => {
     photos.push(addPhoto(i));
   }
 };
-addPhotos();
+
+export {addPhotos};
 
 /*
 const DESCRIPTION = [

@@ -41,4 +41,4 @@ const getRandom = (min, max) => {
   return Math.round(Math.random() * (max - min)) + min;
 };
 
-getRandom (1, 9);
+export {getRandom};
