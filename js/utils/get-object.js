@@ -73,7 +73,8 @@ const addPhotos = () => {
 };
 
 export {addPhotos};
-
+export{Likes};
+export {getRandomInt};
 /*
 const DESCRIPTION = [
   'Пляж с лежаками и белой галькой',
