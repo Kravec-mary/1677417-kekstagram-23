@@ -8,6 +8,11 @@ const picturesContainer = document.querySelector('.pictures');
 const renderPhoto = (photo) => {
   const photoElement = photoTemplate.cloneNode(true);
   photoElement.querySelector('img').src = photo.url;
+  const likes = document.querySelector('.likes-count');
+  likes.textContent = getRandomInt(Likes.MIN, Likes.MAX);
+
+  const comments = document.querySelector('.comments-count');
+  comments.textContent = addComments();
 
   return photoElement;
 };
@@ -17,13 +22,7 @@ const fragment = document.createDocumentFragment();
 const renderPhotos = (data) => {
   data.forEach((photo) => {
     fragment.appendChild(renderPhoto(photo));
-    const likes = document.querySelector('.likes-count');
-    likes.textContent = getRandomInt(Likes.MIN, Likes.MAX);
-
-    const comments = document.querySelector('.comments-count');
-    comments.textContent = addComments();
   });
-
   picturesContainer.appendChild(fragment);
 };
 
