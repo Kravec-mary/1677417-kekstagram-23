@@ -84,4 +84,4 @@ const addPhotos = () => {
 };
 addPhotos();
 
-export {photos, getRandomInt, Likes, addComments};
+export {photos};

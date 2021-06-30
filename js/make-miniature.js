@@ -1,4 +1,4 @@
-import {photos, getRandomInt, Likes, addComments} from './utils/get-object.js';
+import {photos} from './utils/get-object.js';
 
 
 const photoTemplate = document.querySelector('#picture').content.querySelector('.picture'); //находим шаблон
@@ -8,11 +8,8 @@ const picturesContainer = document.querySelector('.pictures');
 const renderPhoto = (photo) => {
   const photoElement = photoTemplate.cloneNode(true);
   photoElement.querySelector('img').src = photo.url;
-  const likes = document.querySelector('.likes-count');
-  likes.textContent = getRandomInt(Likes.MIN, Likes.MAX);
-
-  const comments = document.querySelector('.comments-count');
-  comments.textContent = addComments();
+  photoElement.querySelector('.picture__likes').textContent = photo.likes;
+  photoElement.querySelector('.picture__comments').textContent = photo.comments.length;
 
   return photoElement;
 };
