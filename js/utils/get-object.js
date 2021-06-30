@@ -41,7 +41,18 @@ const DEDCRIPTION_PHOTO = 'Это мой первый пост в кекстаг
 
 const photos = [];
 
-const getRandomInt = (elements) => elements[_.random(0, elements.length - 1)];
+
+const getRandomInt = (min, max) => {
+  if (min < 0 || max < 0) {
+    return -1;
+  }
+
+  if (min > max) {
+    [min, max] = [max, min];
+  }
+
+  return Math.round(Math.random() * (max - min)) + min;
+};
 
 const addComments = () => {
   const comments = [];
@@ -60,7 +71,7 @@ const addComments = () => {
 
 const addPhoto = (index) => ({
   id: index,
-  url: `photos/${index}.jpg`,
+  url: `photos/${index + 1}.jpg`,
   description: DEDCRIPTION_PHOTO,
   likes: getRandomInt(Likes.MIN, Likes.MAX),
   comments: addComments(),
@@ -71,35 +82,6 @@ const addPhotos = () => {
     photos.push(addPhoto(i));
   }
 };
+addPhotos();
 
-export {addPhotos};
-
-/*
-const DESCRIPTION = [
-  'Пляж с лежаками и белой галькой',
-  'Как пройти к пляжу',
-  'Райский пейзаж: лазурная водичка, белый песок и камни',
-  'Я уже здесь успела загореть',
-  'Попробуй съешь нас',
-  'Вот такие премиальные машины теперь в каршеринге!',
-  'Мой завтрак',
-  'Собрала с грядки смородину и сделала морс, вкусно!',
-  'Смотрите, как я могу',
-  'Компактно и удобно',
-  'Сад на песчаном береге',
-  'Моя новая тачка',
-  'Легкий прекрасный ужин в кругу семьи',
-  'Съешь меня!',
-  'Когда очень мерзнут ножки',
-  'А из окна, из окна из окна видишь ты...',
-  'Выступление оркестра в Москве, сегодня в 19:00, приходите!',
-  'Люблю красный цвет',
-  'Тапочки-лунаточки, очень удобно',
-  'Резорт Океанспа',
-  'Новое блюдо: салат с соевым мясом',
-  'Sunset',
-  'Мой новый домашний питомец',
-  'Мы на концерте, всем пис',
-  'Сафари по Танзании',
-];
-*/
+export {photos};
