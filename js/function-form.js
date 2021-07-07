@@ -1,7 +1,6 @@
 const inputUpload = document.querySelector('input');
 const photoEdit = document.querySelector('.img-upload__overlay');
 const body = document.querySelector('body');
-const imgForm = document.querySelector('.img-upload__form');
 
 inputUpload.addEventListener('click', () => {
   inputUpload.setAttribute('type', '');
@@ -27,43 +26,55 @@ document.addEventListener('keydown', (evt) => {
   }
 });
 
-const commentsInput = document.querySelector('.text__description');
+const maxSymbols = 20;
+const maxHashtag = 5;
 const hashtagInput = document.querySelector('.text__hashtags');
 
-function checkHashtags(input){
-  const inputTags = input.value.split(' ').map((value)=> value.toLowerCase());
-  const hashtagRegexCheck = (text)=>  /^#[A-Za-zA-Яа-я0-9]{1,19}$/.test(text);
+hashtagInput.addEventListener('input', () => {
+  hashtagInput.setCustomValidity('');
 
-  if(input.value.length === 0){
-    return true;
+  const inputText = hashtagInput.value.toLowerCase().trim();
+
+  if (!inputText) {
+    return;
   }
 
-  if(inputTags.length > 5){
-    input.setCustomValidity('Введите не более 5 хэштегов');
+  const inputArray = inputText.split(/\s+/);
+  if (inputArray.length === 0) {
     return false;
   }
 
-  if(new Set(inputTags).size !== inputTags.length){
-    input.setCustomValidity('Нельзя использовать одинаковые хештеги');
-    return false;
+  const isStartNotHashtag = inputArray.some((item) => item[0] !=='#');
+
+  if (isStartNotHashtag) {
+    hashtagInput.setCustomValidity('Хештег должен начинаться с символа #');
   }
 
-  return inputTags.every(hashtagRegexCheck);
-}
+  const isOnlyLatticeHashtag = inputArray.some((item) => item === '#');
 
-function checkHomments(input){
-  if(input.value.length === 0){
-    return true;
+  if (isOnlyLatticeHashtag) {
+    hashtagInput.setCustomValidity('Хештег не может состоять из одной решетки');
   }
 
-  if(input.value.length > 140){
-    input.setCustomValidity('Длина комментария не может составлять больше 140 символов');
-    return false;
-  }
-}
+  const isSplitSpaceHastag = inputArray.some((item) => item.indexOf('#', 1) >= 1);
 
-imgForm.addEventListener('submit', (evt)=> {
-  evt.preventDefault();
-  checkHashtags(hashtagInput);
-  checkHomments(commentsInput);
+  if (isSplitSpaceHastag) {
+    hashtagInput.setCustomValidity('Хештеги разделяются пробелами');
+  }
+
+  const isRepeatHashtag = inputArray.some((item, i, arr)=> arr.indexOf(item, i + 1) >= i + 1);
+
+  if (isRepeatHashtag) {
+    hashtagInput.setCustomValidity('Нельзя использовать одинаковые хештеги');
+  }
+
+  const isLongHashtag = inputArray.some((item) => item.length > maxSymbols);
+
+  if (isLongHashtag) {
+    hashtagInput.setCustomValidity('Максимальная длина хештега 20 символов, включая решетку');
+  }
+
+  if (inputArray.length > maxHashtag) {
+    hashtagInput.setCustomValidity('Нельза указывать больше 5 хештегов');
+  }
 });
