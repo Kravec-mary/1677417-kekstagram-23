@@ -78,3 +78,39 @@ hashtagInput.addEventListener('input', () => {
     hashtagInput.setCustomValidity('Нельза указывать больше 5 хештегов');
   }
 });
+
+const getValue = (str) => Number(str.replace(/%/, '')); // 55% -> 55 -> 55 number
+
+//масштаб
+const more = document.querySelector('.scale__control--bigger'); // кнопка плюс
+const less = document.querySelector('.scale__control--smaller'); // кнопка минус
+const scaleImage = document.querySelector('.img-upload__preview-image'); // скейл изображения
+const step = 25;
+
+
+less.addEventListener('click', () => {
+  const inputValue = document.querySelector('.scale__control--value').value; // 25%
+  const numberValue = getValue(inputValue); // 25
+  const calculateValue = numberValue - step; // 0
+  if (calculateValue === 0) {
+    document.querySelector('.scale__control--value').value = `${numberValue  }%`;
+    scaleImage.style.transform = `scale(${numberValue / 100})`;
+  } else {
+    document.querySelector('.scale__control--value').value = `${calculateValue  }%`;
+    scaleImage.style.transform = `scale(${calculateValue / 100})`;
+  }
+});
+
+more.addEventListener('click', () => {
+  const inputValue = document.querySelector('.scale__control--value').value;
+  const numberValue = getValue(inputValue); // 55
+  const calculateValue = numberValue + step;
+  if (calculateValue > 100) {
+    document.querySelector('.scale__control--value').value = `${numberValue  }%`;
+    scaleImage.style.transform = `scale(${numberValue / 100})`;
+  } else {
+    document.querySelector('.scale__control--value').value = `${calculateValue  }%`;
+    scaleImage.style.transform = `scale(${calculateValue / 100})`;
+  }
+});
+
