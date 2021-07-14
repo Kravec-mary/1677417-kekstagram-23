@@ -24,3 +24,8 @@ const renderPhotos = (data) => {
 };
 
 renderPhotos(photos);
+
+//полномасшатбное изображение
+
+//const someImage = document.querySelector('.picture__img');
+//const bigImage = document.querySelector('.big-picture');
