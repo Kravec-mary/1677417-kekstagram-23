@@ -70,7 +70,7 @@ const addComments = () => {
 };
 
 const addPhoto = (index) => ({
-  id: index,
+  id: index, // 1, 2, 3, 4
   url: `photos/${index + 1}.jpg`,
   description: DEDCRIPTION_PHOTO,
   likes: getRandomInt(Likes.MIN, Likes.MAX),
@@ -84,4 +84,4 @@ const addPhotos = () => {
 };
 addPhotos();
 
-export {photos};
+export {photos, addComments}; // => [{id: 1, url: `photos/1.jpg`, description: '', likes: '', comments: ''}, {id: 2, url: `photos/2.jpg`, description: '', likes: '', comments: ''}]

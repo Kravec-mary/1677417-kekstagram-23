@@ -1,15 +1,81 @@
+const DEFAULT_EFFECT_LEVEL = 100;
+
+const Slider = {
+  MAX: 100,
+  MIN: 0,
+  STEP: 1,
+};
+
+const effectList = document.querySelector('.effects__list');
 const inputUpload = document.querySelector('input');
 const photoEdit = document.querySelector('.img-upload__overlay');
 const body = document.querySelector('body');
+const closeButton = document.querySelector('.img-upload__cancel');
 
-inputUpload.addEventListener('click', () => {
-  inputUpload.setAttribute('type', '');
+const sliderElement = document.querySelector('.effect-level__slider');
+const valueElement = document.querySelector('.effect-level__value');
+const image = document.querySelector('.img-upload__preview-image');
+
+const MAX_SYMBOLS = 20;
+const MAX_HASHTAG = 5;
+const hashtagInput = document.querySelector('.text__hashtags');
+//const sliderUi = document.querySelector('.img-upload__effect-level');
+//const noneEffect = document.querySelector('#effect-none');
+
+let lastClass = '';
+
+const effects = {
+  none: () => {
+    sliderElement.classList.add('visually-hidden');
+    return 'none';
+  },
+  chrome: () => {
+    sliderElement.classList.remove('visually-hidden');
+    return `grayscale(${parseInt(valueElement.value, 10) * 0.01})`;
+  },
+  sepia: () => {
+    sliderElement.classList.remove('visually-hidden');
+    return `sepia(${parseInt(valueElement.value, 10) * 0.01})`;
+  },
+  marvin: () => {
+    sliderElement.classList.remove('visually-hidden');
+    return `invert(${Math.floor(valueElement.value)}%)`;
+  },
+  phobos: () => {
+    sliderElement.classList.remove('visually-hidden');
+    return `blur(${(parseInt(valueElement.value, 10) * 3) * 0.01}px)`;
+  },
+  heat: () => {
+    sliderElement.classList.remove('visually-hidden');
+    return `brightness(${(parseInt(valueElement.value, 10) * 3) * 0.01})`;
+  },
+};
+
+inputUpload.addEventListener('change', () => {
   photoEdit.classList.remove('hidden');
   body.classList.add('modal-open');
 });
 
-const closeButton = document.querySelector('.img-upload__cancel');
+effectList.addEventListener('click', (evt) => {
+  let target = evt.target;
 
+  if (target.classList.contains('effects__label')) {
+    target = evt.target.querySelector('span');
+  }
+
+  if (target.classList.contains('effects__preview')) {
+    if (lastClass !== '') {
+      image.classList.remove(lastClass);
+    }
+
+    lastClass = target.classList[1];
+    image.classList.add(lastClass);
+    image.style.filter = '';
+    sliderElement.noUiSlider.set(100);
+  }
+});
+
+// закрытие формы
 closeButton.addEventListener('click', () => {
   photoEdit.classList.add('hidden');
   body.classList.remove('modal-open');
@@ -25,11 +91,7 @@ document.addEventListener('keydown', (evt) => {
     body.classList.remove('modal-open');
   }
 });
-
-const maxSymbols = 20;
-const maxHashtag = 5;
-const hashtagInput = document.querySelector('.text__hashtags');
-
+//проверка хештегов
 hashtagInput.addEventListener('input', () => {
   hashtagInput.setCustomValidity('');
 
@@ -68,13 +130,13 @@ hashtagInput.addEventListener('input', () => {
     hashtagInput.setCustomValidity('Нельзя использовать одинаковые хештеги');
   }
 
-  const isLongHashtag = inputArray.some((item) => item.length > maxSymbols);
+  const isLongHashtag = inputArray.some((item) => item.length > MAX_SYMBOLS);
 
   if (isLongHashtag) {
     hashtagInput.setCustomValidity('Максимальная длина хештега 20 символов, включая решетку');
   }
 
-  if (inputArray.length > maxHashtag) {
+  if (inputArray.length > MAX_HASHTAG) {
     hashtagInput.setCustomValidity('Нельза указывать больше 5 хештегов');
   }
 });
@@ -114,86 +176,18 @@ more.addEventListener('click', () => {
   }
 });
 
-//переключение эффектов
-
-const previewImage = document.querySelector('.img-upload__preview-image');  //сама картинка
-const withoutEffect = document.querySelector('.effects__preview--none');  //оригинал
-const chromeEffect = document.querySelector('.effects__preview--chrome');  //хром
-const sepiaEffect = document.querySelector('.effects__preview--sepia');  //сепиа
-const marvinEffect = document.querySelector('.effects__preview--marvin'); //марвин
-const phobosEffect = document.querySelector('.effects__preview--phobos');  //фобос
-const heatEffect = document.querySelector('.effects__preview--heat');  //зной
-
-withoutEffect.addEventListener('click', () => {
-  previewImage.classList.remove('effects__preview--chrome','effects__preview--sepia', 'effects__preview--marvin', 'effects__preview--phobos', 'effects__preview--heat');
-});
-
-chromeEffect.addEventListener('click', () => {
-  previewImage.classList.remove('effects__preview--chrome','effects__preview--sepia', 'effects__preview--marvin', 'effects__preview--phobos', 'effects__preview--heat');
-  previewImage.classList.add('effects__preview--chrome');
-});
-
-sepiaEffect.addEventListener('click', () => {
-  previewImage.classList.remove('effects__preview--chrome','effects__preview--sepia', 'effects__preview--marvin', 'effects__preview--phobos', 'effects__preview--heat');
-  previewImage.classList.add('effects__preview--sepia');
-  previewImage.style = '';
-});
-
-marvinEffect.addEventListener('click', () => {
-  previewImage.classList.remove('effects__preview--chrome','effects__preview--sepia', 'effects__preview--marvin', 'effects__preview--phobos', 'effects__preview--heat');
-  previewImage.classList.add('effects__preview--marvin');
-  previewImage.style = '';
-});
-
-phobosEffect.addEventListener('click', () => {
-  previewImage.classList.remove('effects__preview--chrome','effects__preview--sepia', 'effects__preview--marvin', 'effects__preview--phobos', 'effects__preview--heat');
-  previewImage.classList.add('effects__preview--phobos');
-  previewImage.style = '';
-});
-
-heatEffect.addEventListener('click', () => {
-  previewImage.classList.remove('effects__preview--chrome','effects__preview--sepia', 'effects__preview--marvin', 'effects__preview--phobos', 'effects__preview--heat');
-  previewImage.classList.add('effects__preview--heat');
-  previewImage.style = '';
-});
-
-//слайдер
-
-const sliderElement = document.querySelector('.effect-level__slider');
-const valueElement = document.querySelector('.effect-level__value');
-const image = document.querySelector('.img-upload__preview-image');
 
 noUiSlider.create(sliderElement, {
   range: {
-    min: 0,
-    max: 100,
+    min: Slider.MIN,
+    max: Slider.MAX,
   },
-  start: 100,
-  step: 1,
+  start: Slider.MAX,
   connect: 'lower',
 });
 
-sliderElement.noUiSlider.on('update', (_, handle, unecoded) => {
-  switch (true) {
+sliderElement.noUiSlider.on('change', () => {
+  valueElement.value = Math.round(sliderElement.noUiSlider.get());
 
-    case image.classList.contains('effects__preview--chrome'):
-      image.style=`filter:grayscale(${unecoded[handle]/100})`;
-      break;
-    case image.classList.contains('effects__preview--sepia'):
-      image.style=`filter:sepia(${unecoded[handle]/100})`;
-      break;
-    case image.classList.contains('effects__preview--marvin'):
-      image.style=`filter:invert(${unecoded[handle]/100})`;
-      break;
-    case image.classList.contains('effects__preview--phobos'):
-      image.style=`filter:blur(${unecoded[handle]/100})`;
-      break;
-    case image.classList.contains('effects__preview--heat'):
-      image.style=`filter:brightness(${unecoded[handle]/100})`;
-      break;
-    default:
-      break;
-  }
-  valueElement.value = unecoded[handle];
+  image.style.filter = effects[lastClass.replace('effects__preview--', '')]();
 });
-
