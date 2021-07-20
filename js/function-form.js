@@ -9,9 +9,9 @@ const Slider = {
 const effectList = document.querySelector('.effects__list');
 const inputUpload = document.querySelector('input');
 const photoEdit = document.querySelector('.img-upload__overlay');
-const body = document.querySelector('body');
+const bodyElement = document.querySelector('body');
 const closeButton = document.querySelector('.img-upload__cancel');
-
+const uploadSubmit = document.querySelector('.img-upload__submit');
 const sliderElement = document.querySelector('.effect-level__slider');
 const valueElement = document.querySelector('.effect-level__value');
 const image = document.querySelector('.img-upload__preview-image');
@@ -53,7 +53,7 @@ const effects = {
 
 inputUpload.addEventListener('change', () => {
   photoEdit.classList.remove('hidden');
-  body.classList.add('modal-open');
+  bodyElement.classList.add('modal-open');
 });
 
 effectList.addEventListener('click', (evt) => {
@@ -78,7 +78,7 @@ effectList.addEventListener('click', (evt) => {
 // закрытие формы
 closeButton.addEventListener('click', () => {
   photoEdit.classList.add('hidden');
-  body.classList.remove('modal-open');
+  bodyElement.classList.remove('modal-open');
 });
 
 document.addEventListener('keydown', (evt) => {
@@ -88,9 +88,10 @@ document.addEventListener('keydown', (evt) => {
   ) {
     evt.preventDefault();
     photoEdit.classList.add('hidden');
-    body.classList.remove('modal-open');
+    bodyElement.classList.remove('modal-open');
   }
 });
+
 //проверка хештегов
 hashtagInput.addEventListener('input', () => {
   hashtagInput.setCustomValidity('');
@@ -191,3 +192,5 @@ sliderElement.noUiSlider.on('change', () => {
 
   image.style.filter = effects[lastClass.replace('effects__preview--', '')]();
 });
+
+//отправка формы

@@ -1,17 +1,23 @@
-import {photos, addComments} from './utils/get-object.js';
-import {fetchPhotos} from './fetch.js';
+import {photos} from './utils/get-object.js';
+import {getData} from './fetch.js';
 
-
+const mainBody = document.querySelector('body');
+const errorTemplate = document.querySelector('#error').content.querySelector('.error');
+const errorWindowButton = errorTemplate.querySelector('.error__button');
 const photoTemplate = document.querySelector('#picture').content.querySelector('.picture'); //находим шаблон
 const picturesContainer = document.querySelector('.pictures');
-
+const REQUEST_STATE = {data: null, error: null};
 const renderPhoto = (photo) => { // {id: 1, url: `photos/1.jpg`, description: '', likes: '', comments: ''}
-const photoElement = photoTemplate.cloneNode(true);
+  const photoElement = photoTemplate.cloneNode(true);
   photoElement.querySelector('img').src = photo.url;
   photoElement.querySelector('.picture__likes').textContent = photo.likes;
   photoElement.querySelector('.picture__comments').textContent = photo.comments.length;
   photoElement.querySelector('img').setAttribute('id', photo.id);
   return photoElement;
+};
+
+const renderError = () => {
+  mainBody.append(errorTemplate);
 };
 
 const fragment = document.createDocumentFragment();
@@ -23,8 +29,28 @@ const renderPhotos = (data) => { // => [{id: 1, url: `photos/1.jpg`, description
   picturesContainer.appendChild(fragment);
 };
 
-const photosData = await fetchPhotos();
-renderPhotos(photosData);
+errorTemplate.addEventListener('click', (event) => {
+  event.preventDefault();
+  mainBody.removeChild(errorTemplate);
+});
+errorWindowButton.addEventListener('click', (event) => {
+  event.preventDefault();
+  mainBody.removeChild(errorTemplate);
+});
+
+
+const handleRequestSuccess = (data) => {
+  REQUEST_STATE.data = data;
+  renderPhotos(data);
+  // console.log('handleRequestSuccess', data);
+};
+const handleRequestError = (error) => {
+  REQUEST_STATE.error = error;
+  renderError();
+};
+
+getData(handleRequestSuccess, handleRequestError);
+
 
 //полномасшатбное изображение
 
@@ -44,12 +70,13 @@ imageContainer.addEventListener('click',(event) =>  { // event - это объе
 
   const likesCount = document.querySelector('.likes-count');
   const commentsCount = document.querySelector('.comments-count');
-  likesCount.textContent = photosData[event.target.id].likes;
-  commentsCount.textContent = photosData[event.target.id].comments.length;
-  socialCaption.textContent = photosData[event.target.id].description;
+  if (REQUEST_STATE.data) {
+    likesCount.textContent = REQUEST_STATE.data[event.target.id].likes;
+    commentsCount.textContent = REQUEST_STATE.data[event.target.id].comments.length;
+    socialCaption.textContent = REQUEST_STATE.data[event.target.id].description;
+  }
 
-
-  const comments = photosData[event.target.id].comments;
+  const comments = (REQUEST_STATE.data || [])[event.target.id].comments;
   const socialComments = document.querySelector('.social__comments');
   const commentTemplate = document.querySelector('#comment').content.querySelector('.social__comment'); // находим шаблон
   const commentElement = commentTemplate.cloneNode(true);
@@ -78,5 +105,6 @@ document.addEventListener('keydown', (evt) => {
   if (evt.key === 'Escape' || evt.key === 'esc') {
     bigImage.classList.add('hidden');
     bodyTeg.classList.remove('modal-open');
+    mainBody.removeChild(errorTemplate);
   }
 });
