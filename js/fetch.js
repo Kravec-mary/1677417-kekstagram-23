@@ -1,7 +1,22 @@
-async function fetchPhotos(){
-  return fetch('https://23.javascript.pages.academy/kekstagram/data')
-    .then((response) => response.json())
-    .then((data) => data);
-}
+const url = {
+  GET: 'https://23.javascript.pages.academy/kekstagram/data',
+  POST: 'https://23.javascript.pages.academy/kekstagram',
+};
 
-export {fetchPhotos};
+const request = (onSuccess, onError, method, data) => {
+  fetch(
+    url[method],
+    {
+      method: method,
+      body: data,
+    },
+  )
+    .then((response) => response.json())
+    .then((photo) => {
+      onSuccess(photo);
+    }).catch(() => {
+      onError();
+    });
+};
+
+export {request};
