@@ -81,7 +81,7 @@ const closeForm = () => {
   bodyElement.classList.remove('modal-open');
   imagePreview.style.transform = '';
   imagePreview.className = 'img-upload__preview';
-  imagePreview.style.filter = 'none';
+  image.style.filter = 'none';
   formUpload.reset();
 };
 
@@ -145,7 +145,7 @@ hashtagInput.addEventListener('input', () => {
   const isRepeatHashtag = inputArray.some((item, i, arr)=> arr.indexOf(item, i + 1) >= i + 1);
 
   if (isRepeatHashtag) {
-    hashtagInput.setCustomValidity('Нельзя использовать одинаковые хештеги');
+    invalidMessage.push('Нельзя использовать одинаковые хештеги');
   }
 
   const isLongHashtag = inputArray.some((item) => item.length > MAX_SYMBOLS);
