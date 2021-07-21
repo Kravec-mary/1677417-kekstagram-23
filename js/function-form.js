@@ -1,3 +1,4 @@
+import {request} from './fetch.js';
 const DEFAULT_EFFECT_LEVEL = 100;
 
 const Slider = {
@@ -6,55 +7,52 @@ const Slider = {
   STEP: 1,
 };
 
+const MAX_SYMBOLS = 20;
+const MAX_HASHTAGS = 5;
+
 const effectList = document.querySelector('.effects__list');
-const inputUpload = document.querySelector('input');
 const photoEdit = document.querySelector('.img-upload__overlay');
 const bodyElement = document.querySelector('body');
 const closeButton = document.querySelector('.img-upload__cancel');
-const uploadSubmit = document.querySelector('.img-upload__submit');
+const formUpload = document.querySelector('.img-upload__form');
+const fileUpload = document.querySelector('#upload-file');
 const sliderElement = document.querySelector('.effect-level__slider');
+const sliderSection = document.querySelector('.img-upload__effect-level');
 const valueElement = document.querySelector('.effect-level__value');
-const image = document.querySelector('.img-upload__preview-image');
+const imagePreview = document.querySelector('.img-upload__preview');
+const image = imagePreview.querySelector('img');
+const scaleControl = document.querySelector('.scale__control--value');
 
-const MAX_SYMBOLS = 20;
-const MAX_HASHTAG = 5;
 const hashtagInput = document.querySelector('.text__hashtags');
-//const sliderUi = document.querySelector('.img-upload__effect-level');
-//const noneEffect = document.querySelector('#effect-none');
-
-let lastClass = '';
-
 const effects = {
   none: () => {
-    sliderElement.classList.add('visually-hidden');
+    sliderSection.classList.add('visually-hidden');
     return 'none';
   },
   chrome: () => {
-    sliderElement.classList.remove('visually-hidden');
+    sliderSection.classList.remove('visually-hidden');
     return `grayscale(${parseInt(valueElement.value, 10) * 0.01})`;
   },
   sepia: () => {
-    sliderElement.classList.remove('visually-hidden');
+    sliderSection.classList.remove('visually-hidden');
     return `sepia(${parseInt(valueElement.value, 10) * 0.01})`;
   },
   marvin: () => {
-    sliderElement.classList.remove('visually-hidden');
+    sliderSection.classList.remove('visually-hidden');
     return `invert(${Math.floor(valueElement.value)}%)`;
   },
   phobos: () => {
-    sliderElement.classList.remove('visually-hidden');
+    sliderSection.classList.remove('visually-hidden');
     return `blur(${(parseInt(valueElement.value, 10) * 3) * 0.01}px)`;
   },
   heat: () => {
-    sliderElement.classList.remove('visually-hidden');
+    sliderSection.classList.remove('visually-hidden');
     return `brightness(${(parseInt(valueElement.value, 10) * 3) * 0.01})`;
   },
 };
 
-inputUpload.addEventListener('change', () => {
-  photoEdit.classList.remove('hidden');
-  bodyElement.classList.add('modal-open');
-});
+valueElement.value = DEFAULT_EFFECT_LEVEL;
+let lastClass = '';
 
 effectList.addEventListener('click', (evt) => {
   let target = evt.target;
@@ -68,32 +66,51 @@ effectList.addEventListener('click', (evt) => {
       image.classList.remove(lastClass);
     }
 
+    sliderElement.noUiSlider.set(Slider.MAX);
+    valueElement.value = Slider.MAX;
+
     lastClass = target.classList[1];
     image.classList.add(lastClass);
-    image.style.filter = '';
-    sliderElement.noUiSlider.set(100);
+    image.style.filter = effects[lastClass.replace('effects__preview--', '')]();
   }
 });
 
 // закрытие формы
-closeButton.addEventListener('click', () => {
+const closeForm = () => {
   photoEdit.classList.add('hidden');
   bodyElement.classList.remove('modal-open');
+  imagePreview.style.transform = '';
+  imagePreview.className = 'img-upload__preview';
+  imagePreview.style.filter = 'none';
+  formUpload.reset();
+};
+
+const onCloseFormEscKeyDown = (evt) => {
+  if (evt.key === 'Escape' || evt.key === 'Esc') {
+    closeForm();
+    document.removeEventListener('keydown', onCloseFormEscKeyDown);
+    evt.preventDefault();
+    closeForm();
+  }
+};
+
+fileUpload.addEventListener('change', (evt) => {
+  evt.preventDefault();
+  photoEdit.classList.remove('hidden');
+  bodyElement.classList.add('modal-open');
+  imagePreview.style.filter = effects.none();
+  document.addEventListener('keydown', onCloseFormEscKeyDown);
 });
 
-document.addEventListener('keydown', (evt) => {
-  if (
-    (evt.key === 'Escape' || evt.key === 'esc') &&
-    !(evt.target.classList.contains('text__hashtags') || evt.target.classList.contains('text__description'))
-  ) {
-    evt.preventDefault();
-    photoEdit.classList.add('hidden');
-    bodyElement.classList.remove('modal-open');
-  }
+
+closeButton.addEventListener('click', () => {
+  closeForm();
 });
 
 //проверка хештегов
+
 hashtagInput.addEventListener('input', () => {
+  const invalidMessage = [];
   hashtagInput.setCustomValidity('');
 
   const inputText = hashtagInput.value.toLowerCase().trim();
@@ -110,19 +127,19 @@ hashtagInput.addEventListener('input', () => {
   const isStartNotHashtag = inputArray.some((item) => item[0] !=='#');
 
   if (isStartNotHashtag) {
-    hashtagInput.setCustomValidity('Хештег должен начинаться с символа #');
+    invalidMessage.push('Хештег должен начинаться с символа #');
   }
 
   const isOnlyLatticeHashtag = inputArray.some((item) => item === '#');
 
   if (isOnlyLatticeHashtag) {
-    hashtagInput.setCustomValidity('Хештег не может состоять из одной решетки');
+    invalidMessage.push('Хештег не может состоять из одной решетки');
   }
 
   const isSplitSpaceHastag = inputArray.some((item) => item.indexOf('#', 1) >= 1);
 
   if (isSplitSpaceHastag) {
-    hashtagInput.setCustomValidity('Хештеги разделяются пробелами');
+    invalidMessage.push('Хештеги разделяются пробелами');
   }
 
   const isRepeatHashtag = inputArray.some((item, i, arr)=> arr.indexOf(item, i + 1) >= i + 1);
@@ -134,47 +151,51 @@ hashtagInput.addEventListener('input', () => {
   const isLongHashtag = inputArray.some((item) => item.length > MAX_SYMBOLS);
 
   if (isLongHashtag) {
-    hashtagInput.setCustomValidity('Максимальная длина хештега 20 символов, включая решетку');
+    invalidMessage.push('Максимальная длина хештега 20 символов, включая решетку');
   }
 
-  if (inputArray.length > MAX_HASHTAG) {
-    hashtagInput.setCustomValidity('Нельза указывать больше 5 хештегов');
+  if (inputArray.length > MAX_HASHTAGS) {
+    invalidMessage.push('Нельза указывать больше 5 хештегов');
+  }
+  if (invalidMessage.length > 0) {
+    hashtagInput.setCustomValidity(invalidMessage.join('.\n'));
+    hashtagInput.style.border = '2px solid #E32636';
+  } else {
+    hashtagInput.style.border = 'none';
   }
 });
 
-const getValue = (str) => Number(str.replace(/%/, '')); // 55% -> 55 -> 55 number
-
 //масштаб
+
 const more = document.querySelector('.scale__control--bigger'); // кнопка плюс
 const less = document.querySelector('.scale__control--smaller'); // кнопка минус
-const scaleImage = document.querySelector('.img-upload__preview-image'); // скейл изображения
-const step = 25;
 
+const Zoom = {
+  MAX: 100,
+  MIN: 25,
+  STEP: 25,
+};
 
 less.addEventListener('click', () => {
-  const inputValue = document.querySelector('.scale__control--value').value; // 25%
-  const numberValue = getValue(inputValue); // 25
-  const calculateValue = numberValue - step; // 0
-  if (calculateValue === 0) {
-    document.querySelector('.scale__control--value').value = `${numberValue  }%`;
-    scaleImage.style.transform = `scale(${numberValue / 100})`;
-  } else {
-    document.querySelector('.scale__control--value').value = `${calculateValue  }%`;
-    scaleImage.style.transform = `scale(${calculateValue / 100})`;
+  let size = parseInt(scaleControl.value, 10);
+
+  if (size === Zoom.MIN) {
+    return;
   }
+  size -= Zoom.STEP;
+  scaleControl.value = `${size}%`;
+  imagePreview.style.transform = `scale(${size / 100})`;
 });
 
 more.addEventListener('click', () => {
-  const inputValue = document.querySelector('.scale__control--value').value;
-  const numberValue = getValue(inputValue); // 55
-  const calculateValue = numberValue + step;
-  if (calculateValue > 100) {
-    document.querySelector('.scale__control--value').value = `${numberValue  }%`;
-    scaleImage.style.transform = `scale(${numberValue / 100})`;
-  } else {
-    document.querySelector('.scale__control--value').value = `${calculateValue  }%`;
-    scaleImage.style.transform = `scale(${calculateValue / 100})`;
+  let size = parseInt(scaleControl.value, 10);
+
+  if (size === Zoom.MAX) {
+    return;
   }
+  size += Zoom.STEP;
+  scaleControl.value = `${size}%`;
+  imagePreview.style.transform = `scale(${size / 100})`;
 });
 
 
@@ -193,4 +214,51 @@ sliderElement.noUiSlider.on('change', () => {
   image.style.filter = effects[lastClass.replace('effects__preview--', '')]();
 });
 
-//отправка формы
+//сообщение
+
+const successMessage = document.querySelector('#success').content.querySelector('.success');
+const errorMessage = document.querySelector('#error').content.querySelector('.error');
+
+
+const closePopupMessage = () => {
+  const popupMessage = document.querySelector('.error') || document.querySelector('.success');
+  popupMessage.remove();
+};
+
+const onMessageEscKeydown = (evt) => {
+  if (evt.key === 'Escape' || evt.key === 'Esc') {
+    closePopupMessage();
+  }
+};
+
+const onDocumentClick = () => {
+  closePopupMessage();
+  document.removeEventListener('keydown', onMessageEscKeydown);
+};
+
+const showSuccessMessage = () => {
+  const messageElement = successMessage.cloneNode(true);
+  messageElement.addEventListener('click', onDocumentClick);
+  bodyElement.appendChild(messageElement);
+  document.addEventListener('keydown', onMessageEscKeydown, {once: true});
+};
+
+const showErrorMessage = () => {
+  const messageElement = errorMessage.cloneNode(true);
+  messageElement.addEventListener('click', onDocumentClick);
+  bodyElement.appendChild(messageElement);
+  document.addEventListener('keydown', onMessageEscKeydown, {once: true});
+};
+
+formUpload.addEventListener('submit', (evt) => {
+  evt.preventDefault();
+  const formData = new FormData(formUpload);
+  const onSuccess = () => {
+    closeForm();
+    showSuccessMessage();
+  };
+  const onError = () => {
+    showErrorMessage();
+  };
+  request(onSuccess, onError, 'POST', formData);
+});

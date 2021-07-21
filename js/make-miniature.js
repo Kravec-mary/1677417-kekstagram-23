@@ -1,110 +1,85 @@
-import {photos} from './utils/get-object.js';
-import {getData} from './fetch.js';
+import {showBigPicture, closePopup} from './full-picture.js';
+import {picture} from './main.js';
+const picturesSection = document.querySelector('.pictures');
+const pictureTemplate = document.querySelector('#picture').content.querySelector('.picture');
 
-const mainBody = document.querySelector('body');
-const errorTemplate = document.querySelector('#error').content.querySelector('.error');
-const errorWindowButton = errorTemplate.querySelector('.error__button');
-const photoTemplate = document.querySelector('#picture').content.querySelector('.picture'); //находим шаблон
-const picturesContainer = document.querySelector('.pictures');
-const REQUEST_STATE = {data: null, error: null};
-const renderPhoto = (photo) => { // {id: 1, url: `photos/1.jpg`, description: '', likes: '', comments: ''}
-  const photoElement = photoTemplate.cloneNode(true);
-  photoElement.querySelector('img').src = photo.url;
-  photoElement.querySelector('.picture__likes').textContent = photo.likes;
-  photoElement.querySelector('.picture__comments').textContent = photo.comments.length;
-  photoElement.querySelector('img').setAttribute('id', photo.id);
-  return photoElement;
+const closePictureEsc = (evt) => {
+  if (evt.key === 'Escape' || evt.key === 'Esc') {
+    closePopup();
+  }
 };
 
-const renderError = () => {
-  mainBody.append(errorTemplate);
+const removePhotos = () => {
+  const photos = document.querySelectorAll('.picture');
+  if (photos) {
+    photos.forEach((photo) => photo.remove());
+  }
+};
+
+const getPhoto = ({url, comments, likes, description}) => {
+  const pictureElement = pictureTemplate.cloneNode(true);
+  pictureElement.querySelector('.picture__img').src = url;
+  pictureElement.querySelector('.picture__comments').textContent = comments.length;
+  pictureElement.querySelector('.picture__likes').textContent = likes;
+  pictureElement.addEventListener('click', (evt) => {
+    evt.preventDefault();
+    showBigPicture(url, comments, likes, description);
+    document.addEventListener('keydown', closePictureEsc);
+  });
+  return pictureElement;
 };
 
 const fragment = document.createDocumentFragment();
-
-const renderPhotos = (data) => { // => [{id: 1, url: `photos/1.jpg`, description: '', likes: '', comments: ''}, {id: 2, url: `photos/2.jpg`, description: '', likes: '', comments: ''}]
-  data.forEach((photo) => {
-    fragment.appendChild(renderPhoto(photo)); // {id: 1, url: `photos/1.jpg`, description: '', likes: '', comments: ''}
+const getPhotos = (photos) => {
+  photos.forEach((item) => {
+    fragment.appendChild(getPhoto(item));
   });
-  picturesContainer.appendChild(fragment);
+  picturesSection.appendChild(fragment);
 };
 
-errorTemplate.addEventListener('click', (event) => {
-  event.preventDefault();
-  mainBody.removeChild(errorTemplate);
-});
-errorWindowButton.addEventListener('click', (event) => {
-  event.preventDefault();
-  mainBody.removeChild(errorTemplate);
-});
+const RANDOM_PICTURES_NUMBER = 10;
+const imgFilters = document.querySelector('.img-filters');
+const imgFiltersForm = imgFilters.querySelector('.img-filters__form');
+const filterButtons = imgFiltersForm.querySelectorAll('button');
 
-
-const handleRequestSuccess = (data) => {
-  REQUEST_STATE.data = data;
-  renderPhotos(data);
-  // console.log('handleRequestSuccess', data);
-};
-const handleRequestError = (error) => {
-  REQUEST_STATE.error = error;
-  renderError();
+const shuffle = (array) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 };
 
-getData(handleRequestSuccess, handleRequestError);
+const allFilters = {
+  'filter-default': () => picture.slice(),
+  'filter-random': () => shuffle(picture).slice(0, RANDOM_PICTURES_NUMBER),
+  'filter-discussed': () => {
+    const discussedPhotos = picture.slice().sort((a, b) => b.comments.length - a.comments.length);
+    return discussedPhotos;
+  },
+};
 
+const debounce = (callback, timeoutDelay) => {
+  let timeoutId;
+  return (...rest) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => callback.apply(this, rest), timeoutDelay);
+  };
+};
 
-//полномасшатбное изображение
-
-const someImage = document.querySelector('.picture__img');
-const bigImage = document.querySelector('.big-picture');
-const bigPictureImage = document.querySelector('.big-picture__img');
-const imgTest = bigPictureImage.querySelector('img');
-const socialCommentCount = document.querySelector('.social__comment-count');
-const socialLoader = document.querySelector('.comments-loader');
-const bodyTeg = document.querySelector('body');
-const closeButtonImage = document.querySelector('.big-picture__cancel');
-const imageContainer = document.querySelector('.pictures');
-const socialCaption = document.querySelector('.social__caption');
-
-
-imageContainer.addEventListener('click',(event) =>  { // event - это объект, target - cвойство
-
-  const likesCount = document.querySelector('.likes-count');
-  const commentsCount = document.querySelector('.comments-count');
-  if (REQUEST_STATE.data) {
-    likesCount.textContent = REQUEST_STATE.data[event.target.id].likes;
-    commentsCount.textContent = REQUEST_STATE.data[event.target.id].comments.length;
-    socialCaption.textContent = REQUEST_STATE.data[event.target.id].description;
+const buttonClick = debounce((evt) => {
+  const selected = imgFiltersForm.querySelector('.img-filters__button--active');
+  if (selected) {
+    selected.classList.remove('img-filters__button--active');
   }
 
-  const comments = (REQUEST_STATE.data || [])[event.target.id].comments;
-  const socialComments = document.querySelector('.social__comments');
-  const commentTemplate = document.querySelector('#comment').content.querySelector('.social__comment'); // находим шаблон
-  const commentElement = commentTemplate.cloneNode(true);
-
-
-  for (let i = 0; i < comments.length; i++) {
-    commentElement.querySelector('.social__picture').src = comments[i].avatar;
-    commentElement.querySelector('.social__text').textContent = comments[i].message;
-    socialComments.appendChild(commentElement);
-  }
-
-  bigImage.classList.remove('hidden');
-  imgTest.src = photos[event.target.id].url;
-  bodyTeg.classList.add('modal-open');
+  evt.target.classList.add('img-filters__button--active');
+  removePhotos();
+  getPhotos(allFilters[evt.target.id]());
 });
 
-//закрытие окна
-
-closeButtonImage.addEventListener('click', () => {
-  bigImage.classList.add('hidden');
-  bodyTeg.classList.remove('modal-open');
-
+filterButtons.forEach((button) => {
+  button.addEventListener('click', buttonClick);
 });
 
-document.addEventListener('keydown', (evt) => {
-  if (evt.key === 'Escape' || evt.key === 'esc') {
-    bigImage.classList.add('hidden');
-    bodyTeg.classList.remove('modal-open');
-    mainBody.removeChild(errorTemplate);
-  }
-});
+export {getPhotos, closePictureEsc, removePhotos};

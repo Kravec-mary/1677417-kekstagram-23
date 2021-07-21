@@ -83,5 +83,3 @@ const addPhotos = () => {
   }
 };
 addPhotos();
-
-export {photos, addComments}; // => [{id: 1, url: `photos/1.jpg`, description: '', likes: '', comments: ''}, {id: 2, url: `photos/2.jpg`, description: '', likes: '', comments: ''}]
