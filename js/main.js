@@ -2,10 +2,10 @@ import './function-form.js';
 import {request} from './fetch.js';
 import {getPhotos} from './make-miniature.js';
 
-let picture = [];
+let pictures = [];
 
 const success = (data) => {
-  picture = data.slice();
+  pictures = data.slice();
   getPhotos(data);
   document.querySelector('.img-filters').classList.remove('img-filters--inactive');
 };
@@ -28,4 +28,4 @@ const error = () => {
 };
 request(success, error, 'GET');
 
-export {picture};
+export {pictures};

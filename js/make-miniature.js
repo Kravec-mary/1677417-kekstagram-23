@@ -1,5 +1,5 @@
 import {showBigPicture, closePopup} from './full-picture.js';
-import {picture} from './main.js';
+import {pictures} from './main.js';
 const picturesSection = document.querySelector('.pictures');
 const pictureTemplate = document.querySelector('#picture').content.querySelector('.picture');
 
@@ -38,6 +38,7 @@ const getPhotos = (photos) => {
 };
 
 const RANDOM_PICTURES_NUMBER = 10;
+const DELAY = 500;
 const imgFilters = document.querySelector('.img-filters');
 const imgFiltersForm = imgFilters.querySelector('.img-filters__form');
 const filterButtons = imgFiltersForm.querySelectorAll('button');
@@ -51,10 +52,10 @@ const shuffle = (array) => {
 };
 
 const allFilters = {
-  'filter-default': () => picture.slice(),
-  'filter-random': () => shuffle(picture).slice(0, RANDOM_PICTURES_NUMBER),
+  'filter-default': () => pictures.slice(),
+  'filter-random': () => shuffle(pictures).slice(0, RANDOM_PICTURES_NUMBER),
   'filter-discussed': () => {
-    const discussedPhotos = picture.slice().sort((a, b) => b.comments.length - a.comments.length);
+    const discussedPhotos = pictures.slice().sort((a, b) => b.comments.length - a.comments.length);
     return discussedPhotos;
   },
 };
@@ -76,7 +77,7 @@ const buttonClick = debounce((evt) => {
   evt.target.classList.add('img-filters__button--active');
   removePhotos();
   getPhotos(allFilters[evt.target.id]());
-});
+}, DELAY);
 
 filterButtons.forEach((button) => {
   button.addEventListener('click', buttonClick);

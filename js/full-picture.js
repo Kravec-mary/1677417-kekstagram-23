@@ -1,45 +1,43 @@
 import {closePictureEsc} from './make-miniature.js';
 
-const COMMENTS_LOAD_STEP = 5;
+const COMMENTS_LOAD = 5;
 
 const bigPicture = document.querySelector('.big-picture');
 const bigPictureImg = bigPicture.querySelector('.big-picture__img img');
-const pictureCloseElement = document.querySelector('.big-picture__cancel');
+const pictureCancel = document.querySelector('.big-picture__cancel');
 const pictureCaption = bigPicture.querySelector('.social__caption');
 const likesCount = bigPicture.querySelector('.likes-count');
 const socialComments = bigPicture.querySelector('.social__comments');
 
 const socialCommentsCount = bigPicture.querySelector('.social__comment-count');
-const loadComments = bigPicture.querySelector('.comments-loader');
+const commentsLoad = bigPicture.querySelector('.comments-loader');
 
-let currentComents = COMMENTS_LOAD_STEP;
-let onloadCommentsButtonClick;
-const addComments = (comments) => {
+let commentsCount = COMMENTS_LOAD;
+let currentComments = [];
+
+const addComments = () => {
   socialComments.innerHTML = '';
-  onloadCommentsButtonClick = () => {
-    currentComents += COMMENTS_LOAD_STEP;
-    addComments(comments);
-  };
-  currentComents = (currentComents > comments.length) ? comments.length : currentComents;
 
-  const comentsSelected = comments.slice(0, currentComents);
+  commentsCount = (commentsCount > currentComments.length) ? currentComments.length : commentsCount;
 
-  if (comments.length <= COMMENTS_LOAD_STEP || currentComents >= comments.length) {
-    loadComments.classList.add('hidden');
+  const commentsSelected = currentComments.slice(0, commentsCount);
+
+  if (currentComments.length <= COMMENTS_LOAD || commentsCount >= currentComments.length) {
+    commentsLoad.classList.add('hidden');
   } else {
-    loadComments.classList.remove('hidden');
+    commentsLoad.classList.remove('hidden');
   }
 
-  socialCommentsCount.textContent = `${currentComents} из ${comments.length} комментариев`;
+  socialCommentsCount.textContent = `${commentsCount} из ${currentComments.length} комментариев`;
 
   const commentFragment = document.createDocumentFragment();
 
-  comentsSelected.forEach((comment) => {
+  commentsSelected.forEach((comment) => {
     const newComment = document.createElement('li');
     const imgComment = document.createElement('img');
     const textComment = document.createElement('p');
     newComment.classList.add('social__comment');
-    imgComment.classList.add('social--picture');
+    imgComment.classList.add('social__picture');
     textComment.classList.add('social__text');
     imgComment.src = comment.avatar;
     imgComment.alt = comment.name;
@@ -51,24 +49,25 @@ const addComments = (comments) => {
   });
 
   socialComments.appendChild(commentFragment);
+};
 
-  loadComments.addEventListener('click', onloadCommentsButtonClick);
+const onloadCommentsButtonClick = () => {
+  commentsCount += COMMENTS_LOAD;
+  addComments();
 };
 
 const closeBigPicture = () => {
   bigPicture.classList.add('hidden');
   document.body.classList.remove('modal-open');
-  currentComents = COMMENTS_LOAD_STEP;
+  commentsCount = COMMENTS_LOAD;
+  currentComments = [];
+  document.removeEventListener('keydown', closePictureEsc);
+  commentsLoad.removeEventListener('click', onloadCommentsButtonClick);
 };
 
 const closePopup = () => {
   closeBigPicture();
-  document.removeEventListener('keydown', closePictureEsc);
-};
-
-const onCloseBigPictureClick = () => {
-  closePopup();
-  loadComments.removeEventListener('click', onloadCommentsButtonClick);
+  pictureCancel.removeEventListener('click', closePopup);
 };
 
 
@@ -78,9 +77,12 @@ const showBigPicture = (url, comments, likes, description) => {
   bigPictureImg.src = url;
   likesCount.textContent = likes;
   pictureCaption.textContent = description;
-  addComments(comments);
+
+  currentComments = comments;
+  addComments();
+
+  commentsLoad.addEventListener('click', onloadCommentsButtonClick);
+  pictureCancel.addEventListener('click', closePopup);
 };
 
-pictureCloseElement.addEventListener('click', onCloseBigPictureClick);
-
-export {showBigPicture, closeBigPicture,closePopup};
+export {showBigPicture, closeBigPicture, closePopup};

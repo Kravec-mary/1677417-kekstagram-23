@@ -116,13 +116,11 @@ hashtagInput.addEventListener('input', () => {
   const inputText = hashtagInput.value.toLowerCase().trim();
 
   if (!inputText) {
+    hashtagInput.style.border = 'none';
     return;
   }
 
   const inputArray = inputText.split(/\s+/);
-  if (inputArray.length === 0) {
-    return false;
-  }
 
   const isStartNotHashtag = inputArray.some((item) => item[0] !=='#');
 
@@ -157,6 +155,7 @@ hashtagInput.addEventListener('input', () => {
   if (inputArray.length > MAX_HASHTAGS) {
     invalidMessage.push('Нельза указывать больше 5 хештегов');
   }
+
   if (invalidMessage.length > 0) {
     hashtagInput.setCustomValidity(invalidMessage.join('.\n'));
     hashtagInput.style.border = '2px solid #E32636';
